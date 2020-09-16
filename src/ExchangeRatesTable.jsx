@@ -3,12 +3,9 @@ import Loader from "./Loader";
 
 export default function ExchangeRatesTable({
   stockRates,
-  buyFieldChange,
-  saleFieldChange,
-  buyFieldInputChange,
-  saleFieldInputChange,
-  onBuyFieldCancelClick,
-  onSaleFieldCancelClick,
+  onFieldChange,
+  tableInputChange,
+  fieldCancelEdit,
   isSomeElementEditing,
 }) {
   return (
@@ -24,7 +21,7 @@ export default function ExchangeRatesTable({
             let buyFieldValue;
             let saleFieldValue;
 
-            if (element.buttonConfig.isBuyCellEditing) {
+            if (element.buttonConfig.buyCellEditing) {
               buyFieldValue = element.buy;
             } else {
               if ((+element.buy).toFixed(2) % 1 === 0) {
@@ -34,7 +31,7 @@ export default function ExchangeRatesTable({
               }
             }
 
-            if (element.buttonConfig.isSaleCellEditing) {
+            if (element.buttonConfig.saleCellEditing) {
               saleFieldValue = element.sale;
             } else {
               if ((+element.sale).toFixed(2) % 1 === 0) {
@@ -53,11 +50,11 @@ export default function ExchangeRatesTable({
                   <input
                     type="number"
                     value={buyFieldValue}
-                    disabled={!element.buttonConfig.isBuyCellEditing}
-                    onChange={(e) => buyFieldInputChange(e, element.id)()}
+                    disabled={!element.buttonConfig.buyCellEditing}
+                    onChange={tableInputChange(element.id, "buy")}
                     className={
                       isSomeElementEditing &&
-                      !element.buttonConfig.isBuyCellEditing
+                      !element.buttonConfig.buyCellEditing
                         ? "inactiveInput"
                         : ""
                     }
@@ -65,25 +62,25 @@ export default function ExchangeRatesTable({
                   />
                   <button
                     id="editButton"
-                    onClick={buyFieldChange(element.id)}
-                    disabled={!element.buttonConfig.isBuyCellReadyToSave}
+                    onClick={onFieldChange(element.id, "buy")}
+                    disabled={!element.buttonConfig.buyCellReadyToSave}
                     className={
                       isSomeElementEditing &&
-                      !element.buttonConfig.isBuyCellEditing
+                      !element.buttonConfig.buyCellEditing
                         ? "invisible"
                         : ""
                     }
                   >
-                    {element.buttonConfig.isBuyCellEditing ? (
+                    {element.buttonConfig.buyCellEditing ? (
                       <span>&#10003;</span>
                     ) : (
                       <span>&#9998;</span>
                     )}
                   </button>
                   <button
-                    onClick={onBuyFieldCancelClick(element.id)}
+                    onClick={fieldCancelEdit(element.id, "buy")}
                     className={
-                      !element.buttonConfig.isBuyCellEditing ? "invisible" : ""
+                      !element.buttonConfig.buyCellEditing ? "invisible" : ""
                     }
                   >
                     &times;
@@ -93,11 +90,11 @@ export default function ExchangeRatesTable({
                   <input
                     type="number"
                     value={saleFieldValue}
-                    disabled={!element.buttonConfig.isSaleCellEditing}
-                    onChange={(e) => saleFieldInputChange(e, element.id)()}
+                    disabled={!element.buttonConfig.saleCellEditing}
+                    onChange={tableInputChange(element.id, "sale")}
                     className={
                       isSomeElementEditing &&
-                      !element.buttonConfig.isSaleCellEditing
+                      !element.buttonConfig.saleCellEditing
                         ? "inactiveInput"
                         : ""
                     }
@@ -105,25 +102,25 @@ export default function ExchangeRatesTable({
                   />
                   <button
                     id="editButton"
-                    onClick={saleFieldChange(element.id)}
-                    disabled={!element.buttonConfig.isSaleCellReadyToSave}
+                    onClick={onFieldChange(element.id, "sale")}
+                    disabled={!element.buttonConfig.saleCellReadyToSave}
                     className={
                       isSomeElementEditing &&
-                      !element.buttonConfig.isSaleCellEditing
+                      !element.buttonConfig.saleCellEditing
                         ? "invisible"
                         : ""
                     }
                   >
-                    {element.buttonConfig.isSaleCellEditing ? (
+                    {element.buttonConfig.saleCellEditing ? (
                       <span>&#10003;</span>
                     ) : (
                       <span>&#9998;</span>
                     )}
                   </button>
                   <button
-                    onClick={onSaleFieldCancelClick(element.id)}
+                    onClick={fieldCancelEdit(element.id, "sale")}
                     className={
-                      !element.buttonConfig.isSaleCellEditing ? "invisible" : ""
+                      !element.buttonConfig.saleCellEditing ? "invisible" : ""
                     }
                   >
                     &times;

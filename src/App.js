@@ -33,11 +33,10 @@ function App() {
   }
 
   useEffect(() => {
-    const currentLoadCounter = +localStorage.getItem("loadCounter");
-    if (currentLoadCounter) {
-      localStorage.setItem("loadCounter", 1);
+    if (!+localStorage.getItem("loadCounter")) {
+      localStorage.setItem("loadCounter", "1");
     }
-    if (currentLoadCounter < 5) {
+    if (+localStorage.getItem("loadCounter") < 5) {
       fetch(BASE_URL)
         .then((res) => res.json())
         .then((data) => {
@@ -54,10 +53,10 @@ function App() {
             };
             element.id = uniqid();
             element.buttonConfig = {
-              isBuyCellEditing: false,
-              isSaleCellEditing: false,
-              isBuyCellReadyToSave: true,
-              isSaleCellReadyToSave: true,
+              buyCellEditing: false,
+              saleCellEditing: false,
+              buyCellReadyToSave: true,
+              saleCellReadyToSave: true,
             };
           });
           ratesObject["BTC"].buy *= ratesObject["USD"].buy;
@@ -69,7 +68,10 @@ function App() {
           setExchangeBuyRate(ratesObject["UAH"].buy);
           setExchangeSaleRate(+data[0].sale);
           setShowLoader(false);
-          localStorage.setItem("loadCounter", currentLoadCounter + 1);
+          localStorage.setItem(
+            "loadCounter",
+            +localStorage.getItem("loadCounter") + 1
+          );
         })
         .catch(() => {
           setError("Something went wrong. Please, try again later");
@@ -77,7 +79,7 @@ function App() {
     } else {
       setTimeout(() => {
         setShowLoader(false);
-        localStorage.setItem("loadCounter", 1);
+        localStorage.setItem("loadCounter", "1");
         setError("Server does not respond. Please, try again later");
       }, 3000);
     }
@@ -134,104 +136,53 @@ function App() {
     setExchangeSaleRate(ratesObject[toCurrency].sale);
   };
 
-  const buyFieldCancelEdit = (id) => {
+  const fieldCancelEdit = (id, key) => {
     const currentObject = stockRates.find((element) => element.id === id);
 
     return () => {
-      currentObject.buy = previousValue;
-      currentObject.buttonConfig.isBuyCellEditing = false;
-      currentObject.buttonConfig.isBuyCellReadyToSave = true;
+      currentObject[key] = previousValue;
+      currentObject.buttonConfig[`${key}CellEditing`] = false;
+      currentObject.buttonConfig[`${key}CellReadyToSave`] = true;
       setCurrentCellValue("");
       setPreviousValue("");
       setIsSomeElementEditing(false);
     };
   };
 
-  const saleFieldCancelEdit = (id) => {
+  const onFieldChange = (id, key) => {
     const currentObject = stockRates.find((element) => element.id === id);
 
     return () => {
-      currentObject.sale = previousValue;
-      currentObject.buttonConfig.isSaleCellEditing = false;
-      currentObject.buttonConfig.isSaleCellReadyToSave = true;
-      setCurrentCellValue("");
-      setPreviousValue("");
-      setIsSomeElementEditing(false);
-    };
-  };
-
-  const buyFieldChange = (id) => {
-    const currentObject = stockRates.find((element) => element.id === id);
-
-    return () => {
-      if (currentObject.buttonConfig.isBuyCellEditing) {
+      if (currentObject.buttonConfig[`${key}CellEditing`]) {
         if (currentCellValue.trim()) {
-          currentObject.buy = currentCellValue;
+          currentObject[key] = currentCellValue;
           refreshRates();
         } else {
-          currentObject.buy = previousValue;
+          currentObject[key] = previousValue;
         }
-        currentObject.buttonConfig.isBuyCellEditing = false;
+        currentObject.buttonConfig[`${key}CellEditing`] = false;
         setCurrentCellValue("");
         setPreviousValue("");
         setIsSomeElementEditing(false);
       } else {
-        currentObject.buttonConfig.isBuyCellEditing = true;
-        currentObject.buttonConfig.isBuyCellReadyToSave = false;
-        setPreviousValue(currentObject.buy);
+        currentObject.buttonConfig[`${key}CellEditing`] = true;
+        currentObject.buttonConfig[`${key}CellReadyToSave`] = false;
+        setPreviousValue(currentObject[key]);
         setIsSomeElementEditing(true);
       }
     };
   };
 
-  const saleFieldChange = (id) => {
+  const tableInputChange = (id, key) => {
     const currentObject = stockRates.find((element) => element.id === id);
 
-    return () => {
-      if (currentObject.buttonConfig.isSaleCellEditing) {
-        if (currentCellValue.trim()) {
-          currentObject.sale = currentCellValue;
-          refreshRates();
-        } else {
-          currentObject.sale = previousValue;
-        }
-        currentObject.buttonConfig.isSaleCellEditing = false;
-        setCurrentCellValue("");
-        setPreviousValue("");
-        setIsSomeElementEditing(false);
-      } else {
-        currentObject.buttonConfig.isSaleCellEditing = true;
-        currentObject.buttonConfig.isSaleCellReadyToSave = false;
-        setPreviousValue(currentObject.sale);
-        setIsSomeElementEditing(true);
-      }
-    };
-  };
-
-  const buyFieldInputChange = ({ target: { value } }, id) => {
-    const currentObject = stockRates.find((element) => element.id === id);
-
-    return () => {
+    return ({ target: { value } }) => {
       if (+value / previousValue <= 0.9 || +value / previousValue >= 1.1) {
-        currentObject.buttonConfig.isBuyCellReadyToSave = true;
-      } else if (currentObject.buttonConfig.isBuyCellReadyToSave) {
-        currentObject.buttonConfig.isBuyCellReadyToSave = false;
+        currentObject.buttonConfig[`${key}CellReadyToSave`] = true;
+      } else if (currentObject.buttonConfig[`${key}CellReadyToSave`]) {
+        currentObject.buttonConfig[`${key}CellReadyToSave`] = false;
       }
-      currentObject.buy = value;
-      setCurrentCellValue(value);
-    };
-  };
-
-  const saleFieldInputChange = ({ target: { value } }, id) => {
-    const currentObject = stockRates.find((element) => element.id === id);
-
-    return () => {
-      if (+value / previousValue <= 0.9 || +value / previousValue >= 1.1) {
-        currentObject.buttonConfig.isSaleCellReadyToSave = true;
-      } else if (currentObject.buttonConfig.isSaleCellReadyToSave) {
-        currentObject.buttonConfig.isSaleCellReadyToSave = false;
-      }
-      currentObject.sale = value;
+      currentObject[key] = value;
       setCurrentCellValue(value);
     };
   };
@@ -245,12 +196,9 @@ function App() {
             <div id="tableComponent">
               <ExchangeRatesTable
                 stockRates={stockRates}
-                buyFieldInputChange={buyFieldInputChange}
-                saleFieldInputChange={saleFieldInputChange}
-                buyFieldChange={buyFieldChange}
-                saleFieldChange={saleFieldChange}
-                onBuyFieldCancelClick={buyFieldCancelEdit}
-                onSaleFieldCancelClick={saleFieldCancelEdit}
+                tableInputChange={tableInputChange}
+                onFieldChange={onFieldChange}
+                fieldCancelEdit={fieldCancelEdit}
                 isSomeElementEditing={isSomeElementEditing}
               />
             </div>
